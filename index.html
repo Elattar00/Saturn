@@ -28,23 +28,14 @@
             user-select: none;
         }
         
-        /* Lighter, cleaner glass panel */
+        /* Main Glass Panel Style */
         .glass-panel {
-            background: rgba(15, 15, 25, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s ease;
-        }
-        
-        /* Specific transparent style for the combined panel to look like "one square" */
-        .control-square {
-            background: rgba(10, 10, 15, 0.5);
+            background: rgba(15, 15, 25, 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #canvas-container {
@@ -54,7 +45,7 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            /* Richer Space Background */
+            /* Deep Space Background */
             background-color: #020205;
             background-image: 
                 radial-gradient(circle at 50% 50%, rgba(20, 10, 30, 0.3) 0%, transparent 60%),
@@ -112,13 +103,13 @@
             100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
         }
 
-        /* Smaller, tighter buttons */
+        /* Compact Buttons */
         .option-btn {
             transition: all 0.3s ease;
             opacity: 0.5;
             position: relative;
-            width: 20px; 
-            height: 20px;
+            width: 22px; 
+            height: 22px;
         }
         .option-btn.active {
             opacity: 1;
@@ -126,57 +117,73 @@
             border-color: #a855f7;
             box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
         }
-        /* Tooltip style */
+        /* Tooltip */
         .option-btn::after {
             content: attr(title);
             position: absolute;
-            right: 28px; 
+            right: 30px; 
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             color: white;
-            padding: 2px 6px;
+            padding: 3px 6px;
             border-radius: 4px;
             font-size: 9px;
+            font-weight: 600;
             white-space: nowrap;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s;
             pointer-events: none;
             z-index: 100;
+            backdrop-filter: blur(4px);
         }
         .option-btn:hover::after {
             opacity: 1;
         }
         
+        /* Scatter Warning Text Transition */
         #scatter-text {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            color: #22d3ee; 
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+            transition: all 0.2s ease;
         }
 
-        /* --- UI Hiding Logic --- */
+        /* --- UI Hiding Animations --- */
+        
+        /* 1. Global Opacity Fade for non-critical elements */
         .hideable-element {
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition: opacity 0.4s ease, transform 0.4s ease;
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0);
         }
-
         .ui-minimal-mode .hideable-element {
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.95);
+            transform: translateY(-10px);
+        }
+
+        /* 2. Accordion collapse for the controls inside the main panel */
+        .collapsible-controls {
+            max-height: 250px; /* Increased to allow for longer panel */
+            opacity: 1;
+            margin-top: 0.75rem;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .mobile-hide { display: none; }
+        .ui-minimal-mode .collapsible-controls {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            padding: 0;
+        }
+
+        /* 3. Panel border fix when collapsed */
+        .ui-minimal-mode #main-control-panel {
+            background: rgba(0, 0, 0, 0.2); 
+            border-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
         }
         
-        #theme-container::-webkit-scrollbar {
-            display: none;
-        }
+        #theme-container::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -185,97 +192,110 @@
 
     <div id="ui-layer" class="flex flex-col justify-between p-3 safe-area-inset">
         
-        <!-- Top UI Area -->
+        <!-- Top Section -->
         <div class="flex justify-between items-start w-full">
             
-            <!-- TOP LEFT: Info / Hints (No purple border) -->
-            <div class="glass-panel rounded-xl p-3 text-white max-w-[160px] interactive-element hideable-element">
-                <div class="mb-2">
-                    <h1 class="text-xs font-bold text-white/90 uppercase tracking-widest border-b border-white/10 pb-1">
+            <!-- TOP LEFT: Info / Hints (Unified Border Style) -->
+            <div class="glass-panel rounded-xl p-3 text-white w-[140px] interactive-element hideable-element">
+                <div class="mb-2 pb-1 border-b border-white/10">
+                    <!-- Adjusted tracking and added whitespace-nowrap to fix spacing issue -->
+                    <h1 class="text-[10px] font-bold text-gray-300 uppercase tracking-wide whitespace-nowrap">
                         Controls
                     </h1>
                 </div>
                 
-                <div class="text-[9px] text-gray-300 space-y-1 font-medium tracking-wide leading-tight">
-                    <div class="flex justify-between items-center">
-                        <span class="opacity-70">✊ Fist</span>
-                        <span id="scatter-text" class="text-[9px]">SCATTER</span>
-                    </div>
-                    <div class="flex items-center gap-1"><span class="opacity-70">🖐 Open</span> <span>Assemble</span></div>
-                    <div class="flex items-center gap-1"><span class="opacity-70">↔ Dist</span> <span>Zoom</span></div>
+                <!-- Grid Layout for perfect spacing -->
+                <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[9px] font-medium tracking-wide">
+                    <!-- Row 1 -->
+                    <div class="opacity-60 text-left text-gray-400">Fist</div>
+                    <!-- CHANGED: text-gray-400 to text-gray-300 for better visibility -->
+                    <div class="text-right text-gray-300 transition-colors duration-200" id="scatter-text">Scatter</div>
+                    
+                    <!-- Row 2 -->
+                    <div class="opacity-60 text-left text-gray-400">Open</div>
+                    <div class="text-right text-gray-300">Assemble</div>
+                    
+                    <!-- Row 3 -->
+                    <div class="opacity-60 text-left text-gray-400">Distance</div>
+                    <div class="text-right text-gray-300">Zoom</div>
                 </div>
             </div>
 
-            <!-- TOP RIGHT: Unified Controls Stack -->
-            <div class="flex flex-col gap-3 items-end">
+            <!-- TOP RIGHT: Unified Square Panel -->
+            <div id="main-control-panel" class="glass-panel rounded-2xl p-2.5 interactive-element flex flex-col items-center w-[135px] transition-all">
                 
-                <!-- 1. Toggle Button -->
-                <button id="ui-toggle-btn" class="interactive-element w-8 h-8 rounded-full bg-black/40 border border-white/20 text-white flex items-center justify-center hover:bg-purple-600/50 transition-all backdrop-blur-md z-50">
-                    <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                </button>
-
-                <!-- 2. Camera (Direct, no extra wrapper outline) -->
-                <div class="relative w-24 h-16 bg-black rounded-lg overflow-hidden border border-white/20 shadow-lg interactive-element">
+                <!-- 1. Camera View (Always Visible) -->
+                <div class="relative w-full h-[75px] bg-black rounded-xl overflow-hidden border border-white/10 shadow-inner group">
                     <video class="input_video" playsinline webkit-playsinline></video>
                     <canvas class="output_canvas absolute top-0 left-0 w-full h-full object-cover opacity-90"></canvas>
                     
-                    <div id="start-overlay" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 z-20 cursor-pointer backdrop-blur-sm">
+                    <!-- Overlay: Start Button -->
+                    <div id="start-overlay" class="absolute inset-0 flex items-center justify-center bg-black/60 z-20 cursor-pointer backdrop-blur-sm">
                         <button id="start-btn" class="btn-pulse bg-purple-600 hover:bg-purple-500 text-white text-[9px] font-bold py-1 px-3 rounded-full transition border border-purple-400">
                             LINK
                         </button>
                     </div>
-                    <div id="loading-spinner" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 hidden"><div class="loader"></div></div>
-                    <div id="error-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-red-900 bg-opacity-95 hidden p-1 text-center z-30">
+
+                    <!-- Overlay: Eye Toggle Button -->
+                    <button id="ui-toggle-btn" class="absolute top-1.5 right-1.5 z-30 w-6 h-6 rounded-full bg-black/40 hover:bg-white/20 text-white/80 flex items-center justify-center transition-all backdrop-blur-md">
+                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                    </button>
+                    
+                    <!-- States -->
+                    <div id="loading-spinner" class="absolute inset-0 flex items-center justify-center bg-black/80 hidden"><div class="loader"></div></div>
+                    <div id="error-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-red-900/90 hidden p-1 text-center z-30">
                         <p class="text-[8px] font-bold text-white">Error</p>
                     </div>
                 </div>
 
-                <!-- 3. Unified Control Square (Form + Energy) -->
-                <div class="control-square rounded-xl p-2.5 interactive-element flex flex-col gap-2 items-center hideable-element">
+                <!-- 2. Controls Section (Collapses when UI hidden) -->
+                <div class="collapsible-controls flex flex-col gap-3 w-full pb-1">
                     
-                    <!-- Shapes Grid -->
-                    <div class="flex flex-col items-center">
-                        <div class="grid grid-cols-3 gap-1.5" id="shape-buttons">
-                            <button class="option-btn active rounded bg-gradient-to-br from-blue-500 to-purple-500" data-shape="saturn" title="Saturn"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-green-400 to-blue-500" data-shape="cube" title="Cube"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-orange-500 to-amber-600" data-shape="sphere" title="Sphere"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-pink-500 to-rose-500" data-shape="vortex" title="Vortex"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-yellow-400 to-orange-500" data-shape="torus" title="Torus"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-indigo-400 to-purple-600" data-shape="dna" title="DNA"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-cyan-400 to-blue-600" data-shape="atom" title="Atom"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-amber-300 to-orange-600" data-shape="hourglass" title="Hourglass"></button>
-                            <button class="option-btn rounded bg-gradient-to-br from-pink-400 to-rose-600" data-shape="ribbon" title="Ribbon"></button>
+                    <!-- Shapes -->
+                    <div class="flex flex-col items-center gap-1.5 w-full">
+                        <label class="text-[8px] text-gray-400 uppercase tracking-widest font-semibold mt-1">Form</label>
+                        <div class="grid grid-cols-3 gap-2" id="shape-buttons">
+                            <button class="option-btn active rounded-md bg-gradient-to-br from-blue-500 to-purple-500 shadow-sm" data-shape="saturn" title="Saturn"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-green-400 to-blue-500 shadow-sm" data-shape="cube" title="Cube"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-orange-500 to-amber-600 shadow-sm" data-shape="sphere" title="Sphere"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-pink-500 to-rose-500 shadow-sm" data-shape="vortex" title="Vortex"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-yellow-400 to-orange-500 shadow-sm" data-shape="torus" title="Torus"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-indigo-400 to-purple-600 shadow-sm" data-shape="dna" title="DNA"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-cyan-400 to-blue-600 shadow-sm" data-shape="atom" title="Atom"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-amber-300 to-orange-600 shadow-sm" data-shape="hourglass" title="Hourglass"></button>
+                            <button class="option-btn rounded-md bg-gradient-to-br from-pink-400 to-rose-600 shadow-sm" data-shape="ribbon" title="Ribbon"></button>
                         </div>
-                        <div id="current-shape-label" class="text-[8px] text-purple-300 font-medium mt-1">Saturn</div>
+                        <div id="current-shape-label" class="text-[9px] text-purple-200 font-medium tracking-wide">Saturn</div>
                     </div>
 
                     <!-- Divider -->
                     <div class="w-full h-px bg-white/10"></div>
 
-                    <!-- Energy Row -->
-                    <div class="flex flex-col items-center w-full">
-                        <div class="flex flex-wrap justify-center gap-1.5" id="theme-container"></div>
-                        <div id="current-theme-label" class="text-[8px] text-purple-300 font-medium mt-1">Cosmic</div>
+                    <!-- Energy -->
+                    <div class="flex flex-col items-center gap-1.5 w-full">
+                        <label class="text-[8px] text-gray-400 uppercase tracking-widest font-semibold">Energy</label>
+                        <div class="flex flex-wrap justify-center gap-2 px-1" id="theme-container"></div>
+                        <div id="current-theme-label" class="text-[9px] text-purple-200 font-medium tracking-wide">Cosmic</div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
 
-        <!-- Bottom Right Status -->
+        <!-- Bottom Right Status (Unified Border Style) -->
         <div class="flex justify-end pointer-events-none">
-            <div class="glass-panel rounded-lg px-2 py-1 text-right opacity-80 scale-90 origin-bottom-right border-r-2 border-purple-500 hideable-element">
-                <div class="flex items-center gap-2">
+            <div class="glass-panel rounded-lg px-2 py-1 text-right opacity-80 scale-90 origin-bottom-right hideable-element">
+                <div class="flex items-center gap-2 justify-end">
                     <span id="status-indicator" class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
                     <span id="status-text" class="text-[9px] text-gray-400 uppercase tracking-wider">Standby</span>
                 </div>
-                <div class="text-[10px] font-mono text-white font-bold flex items-center justify-end gap-2">
+                <div class="text-[10px] font-mono text-white font-bold flex items-center justify-end gap-2 mt-0.5">
                     <span id="zoom-val">100%</span> <span id="track-dot" class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 </div>
             </div>
@@ -1007,7 +1027,10 @@
                 if (openness < CONSTANTS.FIST_THRESHOLD) {
                     state.isExploded = true;
                     state.targetScatter = 1.0;
-                    if(uiManager.scatterText) uiManager.scatterText.style.opacity = 1;
+                    if(uiManager.scatterText) {
+                        uiManager.scatterText.classList.add('text-cyan-400', 'font-bold');
+                        uiManager.scatterText.classList.remove('text-gray-300');
+                    }
                 } else {
                     if (state.isExploded) {
                         const range = 0.6;
@@ -1020,7 +1043,10 @@
                         }
                     } else {
                         state.targetScatter = 0.0;
-                        if(uiManager.scatterText) uiManager.scatterText.style.opacity = 0;
+                        if(uiManager.scatterText) {
+                            uiManager.scatterText.classList.remove('text-cyan-400', 'font-bold');
+                            uiManager.scatterText.classList.add('text-gray-300');
+                        }
                     }
                 }
                 
@@ -1054,7 +1080,10 @@
             } else {
                 state.resetOnHandLoss();
                 uiManager.updateTracking('lost');
-                if(uiManager.scatterText) uiManager.scatterText.style.opacity = 0;
+                if(uiManager.scatterText) {
+                    uiManager.scatterText.classList.remove('text-cyan-400', 'font-bold');
+                    uiManager.scatterText.classList.add('text-gray-300');
+                }
                 state.targetRotY += 0.002;
                 state.targetRotX = state.rotX * 0.9 + 0.2 * 0.1;
             }
